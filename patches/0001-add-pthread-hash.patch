@@ -1,0 +1,28 @@
+diff --git a/include/thread b/include/thread
+index 1c8eb19..5de7a44 100644
+--- a/include/thread
++++ b/include/thread
+@@ -204,6 +204,23 @@ __thread_specific_ptr<_Tp>::set_pointer(pointer __p)
+     __libcpp_tls_set(__key_, __p);
+ }
+ 
++#ifdef _LIBCPP_HAS_THREAD_API_PTHREAD
++#include <pthread.h>
++template <>
++struct _LIBCPP_TEMPLATE_VIS hash<pthread_t>
++    : public __scalar_hash<size_t>
++{
++    _LIBCPP_INLINE_VISIBILITY
++    size_t operator()(pthread_t __v) const _NOEXCEPT
++    {
++       // -0.0 and 0.0 should return same hash
++       if (__v == 0)
++           return 0;
++        return __scalar_hash<size_t>::operator()((size_t) __v.p);
++    }
++};
++#endif
++
+ template<>
+ struct _LIBCPP_TEMPLATE_VIS hash<__thread_id>
+     : public __unary_function<__thread_id, size_t>
